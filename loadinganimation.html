@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loading Animation Simulator</title>
+  <style>
+    body {
+      font-family: monospace;
+      text-align: center;
+      padding-top: 100px;
+      background-color: #f4f4f4;
+    }
+
+    #loader {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      animation: float 1s ease-in-out infinite;
+      display: none;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+
+    #yt-player {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      left: -9999px;
+    }
+
+    #status {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    button {
+      font-size: 1rem;
+      padding: 8px 16px;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ⏳ Loader elements -->
+  <div id="loader">⏳</div>
+  <div id="status">Please wait</div>
+
+  <!-- 🔘 Button to start loader -->
+  <button id="start-loader">▶️ Play Music</button>
+
+  <!-- 🛑 Button to stop loader -->
+  <button id="stop-loader" style="display:none;">⏹️ Stop</button>
+
+  <!-- 🔊 YouTube Player (invisible) -->
+  <div id="yt-player"></div>
+
+  <!-- Load YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    let player;
+    let interval;
+    let cycleCount = 0;
+
+    // YouTube API callback: creates an invisible YouTube player
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('yt-player', {
+        width: '1',
+        height: '1',
+        videoId: 'iyqKy5P1Y0Q',
+        playerVars: {
+          autoplay: 0, // Will be triggered manually by click
+          controls: 0,
+          loop: 1,
+          playlist: 'iyqKy5P1Y0Q', // Required for looping
+          start: 2 // Start 2 seconds in, per original link
+        }
+      });
+    }
+
+    function runLoadingAnimation() {
+      const loader = document.getElementById("loader");
+      const status = document.getElementById("status");
+      const stopBtn = document.getElementById("stop-loader");
+
+      const frames = ["⏳", "⌛", ".", "..", "..."]; // Array of visual symbols to cycle through
+
+      let index = 0;
+      cycleCount = 0;
+      const maxCycles = 10;
+
+      // Grab the element that displays the loading frame
+      // Grab the element that displays the status text
+
+      // Set a limit for how many cycles should run before stopping
+      // setInterval fixes a rate of speed for the cycle — this creates the looping behavior knowing when to start and when to stop
+      // cycleCount’s maxCycles is 10
+      // const frames identifies the amount of frames and what item or object is displayed in the cycle count
+      // const interval calls setInterval
+
+      loader.style.display = "inline-block";
+      status.style.display = "block";
+      stopBtn.style.display = "inline-block";
+
+      // 🎵 Play the YouTube music once user clicks "Start"
+      if (player && player.playVideo) {
+        player.playVideo();
+      }
+
+      interval = setInterval(() => {
+        loader.textContent = frames[index % frames.length];
+        index++;
+
+        if (index % frames.length === 0) {
+          cycleCount++; // If one full loop through frames is completed, increment cycle count
+        }
+
+        if (cycleCount >= maxCycles) {
+          clearInterval(interval); // Stops the animation loop
+          loader.textContent = "✅"; // Show a final frame to signal completion
+          status.textContent = "Done!";
+          stopBtn.style.display = "none";
+
+          if (player && player.pauseVideo) {
+            player.pauseVideo(); // optional: stop the music once done
+          }
+        }
+      }, 500);
+    }
+
+    function stopLoadingAnimation() {
+      // 🛑 User-initiated stop
+      clearInterval(interval);
+      document.getElementById("loader").textContent = "⏹️";
+      document.getElementById("status").textContent = "Stopped.";
+      document.getElementById("stop-loader").style.display = "none";
+
+      if (player && player.pauseVideo) {
+        player.pauseVideo();
+      }
+    }
+
+    // Trigger the function with a user click
+    document.getElementById("start-loader").addEventListener("click", runLoadingAnimation);
+    document.getElementById("stop-loader").addEventListener("click", stopLoadingAnimation);
+
+    // creative idea: instead of the hourglass functioning as an icon what if the background had a particle system that would run out instead.
+  </script>
+
+</body>
+</html>
